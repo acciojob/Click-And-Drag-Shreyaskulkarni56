@@ -36,35 +36,51 @@
 
 <script>
 //Your code goes here 
- let container = document.querySelector(".items");
 
-  let selectedItems = null;
-   let offsetX=0;
-	let offsety=0;
+const container = document.querySelector(".items");
 
-	container.addEventListener("mousedown",(e)=>{
-		if(!e.target.classList.contains("item")) return; 
-	});
+let selectedItem = null;
+let offsetX = 0;
+let offsetY = 0;
 
-	selectedItems =e.target;
+container.addEventListener("mousedown", (e) => {
+  if (!e.target.classList.contains("item")) return;
 
-	const rect = selectedItem.getBoundingClientRect();
+  selectedItem = e.target;
 
-	offsetX = e.clientX - rect.left;
-  offsetY = e.clientY - rect.top;
+  const itemRect = selectedItem.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+
+  offsetX = e.clientX - itemRect.left;
+  offsetY = e.clientY - itemRect.top;
+
+  // Save the current position before removing the item from the grid.
+  const x = itemRect.left - containerRect.left - container.clientLeft;
+  const y = itemRect.top - containerRect.top - container.clientTop;
+
+  selectedItem.style.position = "absolute";
+  selectedItem.style.width = `${itemRect.width}px`;
+  selectedItem.style.height = `${itemRect.height}px`;
+  selectedItem.style.left = `${x}px`;
+  selectedItem.style.top = `${y}px`;
+
+  // Move the selected cube above the others.
+  selectedItem.style.zIndex = "10";
+  selectedItem.style.cursor = "grabbing";
 });
 
+document.addEventListener("mousemove", (e) => {
+  if (!selectedItem) return;
 
- container.addEventListener("mousemove",(e)=>{
-		if(!selectedItems) return; 
-	});
-
-	let x = e.clientX - containerRect.left - offsetX;
-  let y = e.clientY - containerRect.top - offsetY;
+  const containerRect = container.getBoundingClientRect();
 
   const maxX = container.clientWidth - selectedItem.offsetWidth;
   const maxY = container.clientHeight - selectedItem.offsetHeight;
 
+  let x = e.clientX - containerRect.left - container.clientLeft - offsetX;
+  let y = e.clientY - containerRect.top - container.clientTop - offsetY;
+
+  // Keep the cube inside the container.
   x = Math.max(0, Math.min(x, maxX));
   y = Math.max(0, Math.min(y, maxY));
 
@@ -73,9 +89,12 @@
 });
 
 document.addEventListener("mouseup", () => {
+  if (!selectedItem) return;
+
+  selectedItem.style.cursor = "grab";
+  selectedItem.style.zIndex = "";
   selectedItem = null;
 });
-
 </script>
 
   </body>
