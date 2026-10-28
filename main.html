@@ -36,6 +36,46 @@
 
 <script>
 //Your code goes here 
+ let container = document.querySelectorAll(".items");
+
+  let selectedItems = null;
+   let offsetX=0;
+	let offsety=0;
+
+	container.addeventListner("mousedown",(e)=>{
+		if(!e.target.classList.contains("item")) return; 
+	});
+
+	selectedItems =e.target;
+
+	const rect = selectedItem.getBoundingClientRect();
+
+	offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+});
+
+
+ container.addeventListner("mousemove",(e)=>{
+		if(!selectedItems) return; 
+	});
+
+	let x = e.clientX - containerRect.left - offsetX;
+  let y = e.clientY - containerRect.top - offsetY;
+
+  const maxX = container.clientWidth - selectedItem.offsetWidth;
+  const maxY = container.clientHeight - selectedItem.offsetHeight;
+
+  x = Math.max(0, Math.min(x, maxX));
+  y = Math.max(0, Math.min(y, maxY));
+
+  selectedItem.style.left = `${x}px`;
+  selectedItem.style.top = `${y}px`;
+});
+
+document.addEventListener("mouseup", () => {
+  selectedItem = null;
+});
+
 </script>
 
   </body>
