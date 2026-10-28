@@ -53,30 +53,24 @@ container.addEventListener("mousedown", (e) => {
   const itemRect = selectedItem.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
 
-  // Remember where inside the cube the mouse was clicked.
   offsetX = e.clientX - itemRect.left;
   offsetY = e.clientY - itemRect.top;
 
-  // Preserve the original grid cell.
+  // Preserve the cube's original grid cell.
   placeholder = document.createElement("div");
   placeholder.style.width = `${itemRect.width}px`;
   placeholder.style.height = `${itemRect.height}px`;
   placeholder.style.visibility = "hidden";
+  placeholder.style.gridRow = getComputedStyle(selectedItem).gridRow;
+  placeholder.style.gridColumn = getComputedStyle(selectedItem).gridColumn;
 
   selectedItem.parentNode.insertBefore(placeholder, selectedItem);
 
-  // Calculate the cube's position relative to the container.
-  const x =
-    itemRect.left -
-    containerRect.left -
-    container.clientLeft;
+  // Record the original position.
+  const x = itemRect.left - containerRect.left - container.clientLeft;
+  const y = itemRect.top - containerRect.top - container.clientTop;
 
-  const y =
-    itemRect.top -
-    containerRect.top -
-    container.clientTop;
-
-  // Allow the selected cube to move independently.
+  // Make the cube independently draggable.
   selectedItem.style.position = "absolute";
   selectedItem.style.boxSizing = "border-box";
   selectedItem.style.width = `${itemRect.width}px`;
@@ -92,46 +86,32 @@ document.addEventListener("mousemove", (e) => {
   if (!selectedItem) return;
 
   const styles = getComputedStyle(container);
+  const containerRect = container.getBoundingClientRect();
 
-  const paddingLeft = parseFloat(styles.paddingLeft);
-  const paddingRight = parseFloat(styles.paddingRight);
-  const paddingTop = parseFloat(styles.paddingTop);
-  const paddingBottom = parseFloat(styles.paddingBottom);
+  const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+  const paddingRight = parseFloat(styles.paddingRight) || 0;
+  const paddingTop = parseFloat(styles.paddingTop) || 0;
+  const paddingBottom = parseFloat(styles.paddingBottom) || 0;
 
-  // Calculate the usable content area.
+  // Calculate boundaries inside the container's content area.
   const minX = paddingLeft;
   const minY = paddingTop;
 
   const maxX = Math.max(
     minX,
-    container.clientWidth -
-      paddingRight -
-      selectedItem.offsetWidth
+    container.clientWidth - paddingRight - selectedItem.offsetWidth
   );
 
   const maxY = Math.max(
     minY,
-    container.clientHeight -
-      paddingBottom -
-      selectedItem.offsetHeight
+    container.clientHeight - paddingBottom - selectedItem.offsetHeight
   );
 
-  const containerRect = container.getBoundingClientRect();
+  // Calculate the new position relative to the container.
+  let x = e.clientX - containerRect.left - container.clientLeft - offsetX;
+  let y = e.clientY - containerRect.top - container.clientTop - offsetY;
 
-  // Calculate the desired position relative to the container.
-  let x =
-    e.clientX -
-    containerRect.left -
-    container.clientLeft -
-    offsetX;
-
-  let y =
-    e.clientY -
-    containerRect.top -
-    container.clientTop -
-    offsetY;
-
-  // Keep the entire cube inside the content area.
+  // Keep the entire cube within the boundaries.
   x = Math.max(minX, Math.min(x, maxX));
   y = Math.max(minY, Math.min(y, maxY));
 
@@ -145,7 +125,6 @@ document.addEventListener("mouseup", () => {
   selectedItem.style.cursor = "grab";
   selectedItem.style.zIndex = "";
 
-  // Allow another cube to be selected.
   selectedItem = null;
   placeholder = null;
 });
