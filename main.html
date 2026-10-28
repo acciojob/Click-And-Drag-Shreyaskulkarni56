@@ -46,9 +46,11 @@ let offsetX = 0;
 let offsetY = 0;
 
 container.addEventListener("mousedown", (e) => {
-  if (!e.target.classList.contains("item")) return;
+  const item = e.target.closest(".item");
 
-  selectedItem = e.target;
+  if (!item || !container.contains(item)) return;
+
+  selectedItem = item;
 
   const rect = selectedItem.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
@@ -56,7 +58,7 @@ container.addEventListener("mousedown", (e) => {
   offsetX = e.clientX - rect.left;
   offsetY = e.clientY - rect.top;
 
-  // Preserve the original grid cell.
+  // Preserve the grid cell.
   placeholder = document.createElement("div");
   placeholder.style.width = `${rect.width}px`;
   placeholder.style.height = `${rect.height}px`;
@@ -64,15 +66,17 @@ container.addEventListener("mousedown", (e) => {
 
   selectedItem.parentNode.insertBefore(placeholder, selectedItem);
 
-  // Move the selected cube outside the grid flow.
+  // Calculate coordinates relative to the container's inner border.
+  const x = rect.left - containerRect.left - container.clientLeft;
+  const y = rect.top - containerRect.top - container.clientTop;
+
   selectedItem.style.position = "absolute";
+  selectedItem.style.boxSizing = "border-box";
   selectedItem.style.width = `${rect.width}px`;
   selectedItem.style.height = `${rect.height}px`;
-  selectedItem.style.left =
-    `${rect.left - containerRect.left - container.clientLeft}px`;
-  selectedItem.style.top =
-    `${rect.top - containerRect.top - container.clientTop}px`;
-
+  selectedItem.style.left = `${x}px`;
+  selectedItem.style.top = `${y}px`;
+  selectedItem.style.margin = "0";
   selectedItem.style.zIndex = "1000";
 });
 
@@ -81,6 +85,7 @@ document.addEventListener("mousemove", (e) => {
 
   const containerRect = container.getBoundingClientRect();
 
+  // The container's inner content area is the movement boundary.
   const maxX = container.clientWidth - selectedItem.offsetWidth;
   const maxY = container.clientHeight - selectedItem.offsetHeight;
 
@@ -90,8 +95,9 @@ document.addEventListener("mousemove", (e) => {
   let y =
     e.clientY - containerRect.top - container.clientTop - offsetY;
 
-  x = Math.max(0, Math.min(x, maxX));
-  y = Math.max(0, Math.min(y, maxY));
+  // Clamp the cube's entire bounding box inside the container.
+  x = Math.max(0, Math.min(x, Math.max(0, maxX)));
+  y = Math.max(0, Math.min(y, Math.max(0, maxY)));
 
   selectedItem.style.left = `${x}px`;
   selectedItem.style.top = `${y}px`;
@@ -100,9 +106,12 @@ document.addEventListener("mousemove", (e) => {
 document.addEventListener("mouseup", () => {
   if (!selectedItem) return;
 
-  // Keep the cube at its final position.
   selectedItem.style.zIndex = "";
+  selectedItem.style.cursor = "grab";
+
+  // Keep the placeholder so the grid retains its original structure.
   selectedItem = null;
+  placeholder = null;
 });
 
 </script>
