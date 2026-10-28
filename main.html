@@ -36,8 +36,6 @@
 
 <script>
 //Your code goes here 
-
-
 const container = document.querySelector(".items");
 
 let selectedItem = null;
@@ -52,52 +50,90 @@ container.addEventListener("mousedown", (e) => {
 
   selectedItem = item;
 
-  const rect = selectedItem.getBoundingClientRect();
+  const itemRect = selectedItem.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
 
-  offsetX = e.clientX - rect.left;
-  offsetY = e.clientY - rect.top;
+  // Remember where inside the cube the mouse was clicked.
+  offsetX = e.clientX - itemRect.left;
+  offsetY = e.clientY - itemRect.top;
 
-  // Preserve the grid cell.
+  // Preserve the original grid cell.
   placeholder = document.createElement("div");
-  placeholder.style.width = `${rect.width}px`;
-  placeholder.style.height = `${rect.height}px`;
+  placeholder.style.width = `${itemRect.width}px`;
+  placeholder.style.height = `${itemRect.height}px`;
   placeholder.style.visibility = "hidden";
 
   selectedItem.parentNode.insertBefore(placeholder, selectedItem);
 
-  // Calculate coordinates relative to the container's inner border.
-  const x = rect.left - containerRect.left - container.clientLeft;
-  const y = rect.top - containerRect.top - container.clientTop;
+  // Calculate the cube's position relative to the container.
+  const x =
+    itemRect.left -
+    containerRect.left -
+    container.clientLeft;
 
+  const y =
+    itemRect.top -
+    containerRect.top -
+    container.clientTop;
+
+  // Allow the selected cube to move independently.
   selectedItem.style.position = "absolute";
   selectedItem.style.boxSizing = "border-box";
-  selectedItem.style.width = `${rect.width}px`;
-  selectedItem.style.height = `${rect.height}px`;
+  selectedItem.style.width = `${itemRect.width}px`;
+  selectedItem.style.height = `${itemRect.height}px`;
+  selectedItem.style.margin = "0";
   selectedItem.style.left = `${x}px`;
   selectedItem.style.top = `${y}px`;
-  selectedItem.style.margin = "0";
   selectedItem.style.zIndex = "1000";
+  selectedItem.style.cursor = "grabbing";
 });
 
 document.addEventListener("mousemove", (e) => {
   if (!selectedItem) return;
 
+  const styles = getComputedStyle(container);
+
+  const paddingLeft = parseFloat(styles.paddingLeft);
+  const paddingRight = parseFloat(styles.paddingRight);
+  const paddingTop = parseFloat(styles.paddingTop);
+  const paddingBottom = parseFloat(styles.paddingBottom);
+
+  // Calculate the usable content area.
+  const minX = paddingLeft;
+  const minY = paddingTop;
+
+  const maxX = Math.max(
+    minX,
+    container.clientWidth -
+      paddingRight -
+      selectedItem.offsetWidth
+  );
+
+  const maxY = Math.max(
+    minY,
+    container.clientHeight -
+      paddingBottom -
+      selectedItem.offsetHeight
+  );
+
   const containerRect = container.getBoundingClientRect();
 
-  // The container's inner content area is the movement boundary.
-  const maxX = container.clientWidth - selectedItem.offsetWidth;
-  const maxY = container.clientHeight - selectedItem.offsetHeight;
-
+  // Calculate the desired position relative to the container.
   let x =
-    e.clientX - containerRect.left - container.clientLeft - offsetX;
+    e.clientX -
+    containerRect.left -
+    container.clientLeft -
+    offsetX;
 
   let y =
-    e.clientY - containerRect.top - container.clientTop - offsetY;
+    e.clientY -
+    containerRect.top -
+    container.clientTop -
+    offsetY;
 
-  // Clamp the cube's entire bounding box inside the container.
-  x = Math.max(0, Math.min(x, Math.max(0, maxX)));
-  y = Math.max(0, Math.min(y, Math.max(0, maxY)));
+  // Keep the entire cube inside the content area.
+  x = Math.max(minX, Math.min(x, maxX));
+  y = Math.max(minY, Math.min(y, maxY));
 
   selectedItem.style.left = `${x}px`;
   selectedItem.style.top = `${y}px`;
@@ -106,10 +142,10 @@ document.addEventListener("mousemove", (e) => {
 document.addEventListener("mouseup", () => {
   if (!selectedItem) return;
 
-  selectedItem.style.zIndex = "";
   selectedItem.style.cursor = "grab";
+  selectedItem.style.zIndex = "";
 
-  // Keep the placeholder so the grid retains its original structure.
+  // Allow another cube to be selected.
   selectedItem = null;
   placeholder = null;
 });
