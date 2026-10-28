@@ -42,7 +42,7 @@
    let offsetX=0;
 	let offsety=0;
 
-	container.addeventListner("mousedown",(e)=>{
+	container.addEventListener("mousedown",(e)=>{
 		if(!e.target.classList.contains("item")) return; 
 	});
 
@@ -55,7 +55,7 @@
 });
 
 
- container.addeventListner("mousemove",(e)=>{
+ container.addEventListener("mousemove",(e)=>{
 		if(!selectedItems) return; 
 	});
 
