@@ -67,5 +67,10 @@ body {
 .cube:nth-child(9n+8) { background: darkslateblue;}
 .cube:nth-child(9n+9) { background: rebeccapurple;}
 
-.cube:nth-child(even) { transform: scaleX(1.31) rotateY(40deg); }
-.cube:nth-child(odd) { transform: scaleX(1.31) rotateY(-40deg); }
+.cube:nth-child(even) {
+    transform: scaleX(1.31) rotateY(40deg);
+}
+
+.cube:nth-child(odd) {
+    transform: scaleX(1.31) rotateY(-40deg);
+}
