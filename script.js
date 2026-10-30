@@ -24,9 +24,13 @@ function startDrag(event) {
     const top = cubeRect.top - containerRect.top
         - container.clientTop;
 
+    // Preserve the original layout dimensions.
+    const width = selectedCube.offsetWidth;
+    const height = selectedCube.offsetHeight;
+
     selectedCube.style.position = 'absolute';
-    selectedCube.style.width = `${selectedCube.offsetWidth}px`;
-    selectedCube.style.height = `${selectedCube.offsetHeight}px`;
+    selectedCube.style.width = `${width}px`;
+    selectedCube.style.height = `${height}px`;
     selectedCube.style.left = `${left}px`;
     selectedCube.style.top = `${top}px`;
 
@@ -45,32 +49,29 @@ function dragCube(event) {
     const containerLeft = containerRect.left + container.clientLeft;
     const containerTop = containerRect.top + container.clientTop;
 
-    // Calculate the transformed cube's offsets from its untransformed origin.
-    const offsetLeft = cubeRect.left -
+    // Visual offsets relative to the cube's positioning origin.
+    const visualLeft = cubeRect.left -
         (containerLeft + selectedCube.offsetLeft);
 
-    const offsetTop = cubeRect.top -
+    const visualTop = cubeRect.top -
         (containerTop + selectedCube.offsetTop);
 
-    const offsetRight = cubeRect.right -
+    const visualRight = cubeRect.right -
         (containerLeft + selectedCube.offsetLeft);
 
-    const offsetBottom = cubeRect.bottom -
+    const visualBottom = cubeRect.bottom -
         (containerTop + selectedCube.offsetTop);
 
     let x = event.clientX - containerLeft - offsetX;
     let y = event.clientY - containerTop - offsetY;
 
-    // Constrain the transformed bounding box to the container.
-    x = Math.max(-offsetLeft, Math.min(
-        x,
-        container.clientWidth - offsetRight
-    ));
+    const minX = -visualLeft;
+    const minY = -visualTop;
+    const maxX = container.clientWidth - visualRight;
+    const maxY = container.clientHeight - visualBottom;
 
-    y = Math.max(-offsetTop, Math.min(
-        y,
-        container.clientHeight - offsetBottom
-    ));
+    x = Math.max(minX, Math.min(x, maxX));
+    y = Math.max(minY, Math.min(y, maxY));
 
     selectedCube.style.left = `${x}px`;
     selectedCube.style.top = `${y}px`;
