@@ -18,16 +18,17 @@ function startDrag(event) {
     offsetX = event.clientX - cubeRect.left;
     offsetY = event.clientY - cubeRect.top;
 
-    // Preserve the cube's current position before removing it from the grid.
-    const left = cubeRect.left - containerRect.left - container.clientLeft;
-    const top = cubeRect.top - containerRect.top - container.clientTop;
+    const left = cubeRect.left - containerRect.left
+        - container.clientLeft;
+
+    const top = cubeRect.top - containerRect.top
+        - container.clientTop;
 
     selectedCube.style.position = 'absolute';
-    selectedCube.style.width = `${cubeRect.width / 1.31}px`;
-    selectedCube.style.height = `${cubeRect.height}px`;
+    selectedCube.style.width = `${selectedCube.offsetWidth}px`;
+    selectedCube.style.height = `${selectedCube.offsetHeight}px`;
     selectedCube.style.left = `${left}px`;
     selectedCube.style.top = `${top}px`;
-    selectedCube.style.margin = '0';
 
     selectedCube.classList.add('dragging');
 
@@ -39,18 +40,37 @@ function dragCube(event) {
     if (!selectedCube) return;
 
     const containerRect = container.getBoundingClientRect();
+    const cubeRect = selectedCube.getBoundingClientRect();
 
-    const maxX = container.clientWidth - selectedCube.offsetWidth;
-    const maxY = container.clientHeight - selectedCube.offsetHeight;
+    const containerLeft = containerRect.left + container.clientLeft;
+    const containerTop = containerRect.top + container.clientTop;
 
-    let x = event.clientX - containerRect.left
-        - container.clientLeft - offsetX;
+    // Calculate the transformed cube's offsets from its untransformed origin.
+    const offsetLeft = cubeRect.left -
+        (containerLeft + selectedCube.offsetLeft);
 
-    let y = event.clientY - containerRect.top
-        - container.clientTop - offsetY;
+    const offsetTop = cubeRect.top -
+        (containerTop + selectedCube.offsetTop);
 
-    x = Math.max(0, Math.min(x, maxX));
-    y = Math.max(0, Math.min(y, maxY));
+    const offsetRight = cubeRect.right -
+        (containerLeft + selectedCube.offsetLeft);
+
+    const offsetBottom = cubeRect.bottom -
+        (containerTop + selectedCube.offsetTop);
+
+    let x = event.clientX - containerLeft - offsetX;
+    let y = event.clientY - containerTop - offsetY;
+
+    // Constrain the transformed bounding box to the container.
+    x = Math.max(-offsetLeft, Math.min(
+        x,
+        container.clientWidth - offsetRight
+    ));
+
+    y = Math.max(-offsetTop, Math.min(
+        y,
+        container.clientHeight - offsetBottom
+    ));
 
     selectedCube.style.left = `${x}px`;
     selectedCube.style.top = `${y}px`;
