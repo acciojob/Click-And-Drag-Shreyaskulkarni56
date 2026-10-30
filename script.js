@@ -20,19 +20,19 @@ function startDrag(event) {
 
     const left = cubeRect.left - containerRect.left
         - container.clientLeft;
-
     const top = cubeRect.top - containerRect.top
         - container.clientTop;
 
-    // Preserve the original layout dimensions.
+    // Preserve the cube's dimensions before removing it from the grid.
     const width = selectedCube.offsetWidth;
     const height = selectedCube.offsetHeight;
 
-    selectedCube.style.position = 'absolute';
     selectedCube.style.width = `${width}px`;
     selectedCube.style.height = `${height}px`;
+    selectedCube.style.position = 'absolute';
     selectedCube.style.left = `${left}px`;
     selectedCube.style.top = `${top}px`;
+    selectedCube.style.margin = '0';
 
     selectedCube.classList.add('dragging');
 
@@ -49,29 +49,25 @@ function dragCube(event) {
     const containerLeft = containerRect.left + container.clientLeft;
     const containerTop = containerRect.top + container.clientTop;
 
-    // Visual offsets relative to the cube's positioning origin.
     const visualLeft = cubeRect.left -
         (containerLeft + selectedCube.offsetLeft);
-
     const visualTop = cubeRect.top -
         (containerTop + selectedCube.offsetTop);
-
     const visualRight = cubeRect.right -
         (containerLeft + selectedCube.offsetLeft);
-
     const visualBottom = cubeRect.bottom -
         (containerTop + selectedCube.offsetTop);
 
     let x = event.clientX - containerLeft - offsetX;
     let y = event.clientY - containerTop - offsetY;
 
-    const minX = -visualLeft;
-    const minY = -visualTop;
-    const maxX = container.clientWidth - visualRight;
-    const maxY = container.clientHeight - visualBottom;
+    x = Math.max(-visualLeft, Math.min(
+        x, container.clientWidth - visualRight
+    ));
 
-    x = Math.max(minX, Math.min(x, maxX));
-    y = Math.max(minY, Math.min(y, maxY));
+    y = Math.max(-visualTop, Math.min(
+        y, container.clientHeight - visualBottom
+    ));
 
     selectedCube.style.left = `${x}px`;
     selectedCube.style.top = `${y}px`;
